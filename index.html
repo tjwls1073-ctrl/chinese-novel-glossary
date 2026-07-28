@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#121212">
+  <title>중국소설 용어집 추출기 V2</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <span class="kicker">COLOMO HELPER</span>
+      <h1>중국소설<br>용어집 추출기</h1>
+      <p>중국어 고유명사를 원문 한자와 한국 한자음으로 정리합니다.</p>
+    </header>
+
+    <section class="card">
+      <div class="tabs">
+        <button class="tab active" data-mode="url">URL</button>
+        <button class="tab" data-mode="text">본문 붙여넣기</button>
+      </div>
+
+      <div id="urlPanel" class="panel active">
+        <label>소설 회차 주소</label>
+        <input id="url" type="url" placeholder="https://...">
+        <p class="hint">사이트에서 자동 수집이 막히면 본문 붙여넣기를 사용하세요.</p>
+      </div>
+
+      <div id="textPanel" class="panel">
+        <label>중국어 본문</label>
+        <textarea id="text" rows="12" placeholder="중국어 소설 본문을 붙여넣으세요."></textarea>
+      </div>
+
+      <div class="two">
+        <div>
+          <label>작품명</label>
+          <input id="project" placeholder="예: 작품 제목">
+        </div>
+        <div>
+          <label>모델</label>
+          <input id="model" value="gemini-3.1-flash-lite">
+        </div>
+      </div>
+
+      <label class="check">
+        <input id="mergeExisting" type="checkbox" checked>
+        같은 작품에 저장된 용어집과 합치기
+      </label>
+
+      <button id="extract" class="primary">용어집 추출</button>
+      <div id="status" class="status"></div>
+    </section>
+
+    <section id="resultCard" class="card hidden">
+      <div class="head">
+        <div>
+          <span class="kicker">RESULT</span>
+          <h2 id="resultTitle">고유명사 표기표</h2>
+        </div>
+        <span id="count" class="pill">0개</span>
+      </div>
+
+      <div class="filterRow">
+        <button class="mini active" data-filter="all">전체</button>
+        <button class="mini" data-filter="person">인물</button>
+        <button class="mini" data-filter="place">지명·세력</button>
+        <button class="mini" data-filter="term">기타 용어</button>
+      </div>
+
+      <textarea id="output" rows="20" spellcheck="false"></textarea>
+
+      <div class="actions">
+        <button id="copy" class="primary">콜로모용 복사</button>
+        <button id="save" class="secondary">작품에 저장</button>
+        <button id="download" class="secondary">TXT 저장</button>
+      </div>
+
+      <details>
+        <summary>콜로모 번역 지침도 함께 보기</summary>
+        <textarea id="promptBox" rows="12" readonly></textarea>
+        <button id="copyPrompt" class="secondary full">용어집+번역 지침 복사</button>
+      </details>
+    </section>
+
+    <section class="card">
+      <div class="head">
+        <div>
+          <span class="kicker">SAVED</span>
+          <h2>작품별 용어집</h2>
+        </div>
+        <button id="clear" class="ghost">전체 삭제</button>
+      </div>
+      <div id="saved" class="saved"></div>
+    </section>
+
+    <footer>용어집은 이 브라우저 기기에만 저장됩니다.</footer>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
