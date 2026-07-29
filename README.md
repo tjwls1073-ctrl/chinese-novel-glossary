@@ -1,34 +1,13 @@
-# 중국소설 용어집 추출기 V2
+# 소설 용어집 추출기 v7
 
-## 가장 간단한 사용 순서
+중국어 웹소설 본문에서 고유명사를 추출합니다.
 
-1. 이 저장소 파일을 GitHub에 올립니다.
-2. Cloudflare에서 Workers & Pages → Create → Pages → GitHub 연결을 선택합니다.
-3. 이 저장소를 선택합니다.
-4. Framework preset은 None, Build command는 비움, Output directory는 `/`로 설정합니다.
-5. 배포 후 Settings → Variables and Secrets에서 `GEMINI_API_KEY`를 Secret으로 추가합니다.
-6. 다시 배포합니다.
-7. 만들어진 `pages.dev` 주소를 아이폰 홈 화면에 추가합니다.
+## v7 변경점
+- 작품 배경과 문맥을 자동 판별합니다.
+- 실제 중국 이름은 한국 한자음으로 표기합니다.
+- 중국어로 음차된 서양·외국·판타지 이름은 자연스러운 한국어 외래어 표기로 복원합니다.
+- 일본 이름은 일본식 독음을 사용합니다.
+- 사용자 Gemini API 키를 요청마다 사용하며 저장하지 않습니다.
 
-## 기능
-
-- URL 또는 본문 붙여넣기
-- 인물 / 지명·세력 / 기타 용어 분류
-- 한국 한자음 표기
-- 기존 작품 용어집 자동 병합
-- 콜로모용 용어집 복사
-- 번역 지침과 함께 복사
-- 작품별 저장
-- TXT 다운로드
-
-## 파일 구조
-
-- `index.html`
-- `style.css`
-- `app.js`
-- `functions/api/extract.js`
-- `wrangler.toml`
-
-## 중요한 점
-
-`GEMINI_API_KEY`는 코드 파일에 직접 쓰지 말고 반드시 Cloudflare Secret으로 등록하세요.
+## Cloudflare Pages 배포
+저장소 최상위에 이 폴더의 파일을 그대로 업로드하세요. Functions 경로는 `functions/api/extract.js`입니다.
