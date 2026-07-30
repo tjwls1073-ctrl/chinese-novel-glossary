@@ -1,9 +1,0 @@
-{
-  "name": "소설 용어집 추출기",
-  "short_name": "용어집",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#f4f8ec",
-  "theme_color": "#b8cdb0",
-  "icons": []
-}
