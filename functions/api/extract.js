@@ -8,7 +8,7 @@ export async function onRequestPost({ request, env }) {
     const model = cleanModel(
       body.model ||
       env.GEMINI_MODEL ||
-      "gemini-3.1-flash-lite"
+      "gemini-2.5-flash"
     );
 
     // 화면에서 입력한 API 키를 우선 사용하고,
