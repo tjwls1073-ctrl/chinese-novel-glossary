@@ -78,7 +78,6 @@ function getStore(){
 function saveStore(x){localStorage.setItem(GLOSSARY_STORAGE,JSON.stringify(x));renderSaved()}
 function visible(filter="all"){return entries.filter(x=>["person","place"].includes(x.cat)&&(filter==="all"||x.cat===filter))}
 function format(filter="all"){
-function format(filter="all"){
  const list=visible(filter);
  return "[고유명사 표기표]\n\n"+
  list.map(x=>`${x.src} = ${x.ko}`).join("\n")+
