@@ -78,9 +78,17 @@ function getStore(){
 function saveStore(x){localStorage.setItem(GLOSSARY_STORAGE,JSON.stringify(x));renderSaved()}
 function visible(filter="all"){return entries.filter(x=>["person","place"].includes(x.cat)&&(filter==="all"||x.cat===filter))}
 function format(filter="all"){
+function format(filter="all"){
  const list=visible(filter);
- return "[고유명사 표기표]\n\n"+list.map(x=>`${x.src} = ${x.ko}`).join("\n")+
- "\n\n원문에서 위 고유명사가 등장하면 반드시 지정된 표기를 사용한다.\n표에 없는 고유명사는 문맥상 실제 중국 고유명사인지, 중국어로 음차된 외국·판타지 고유명사인지 먼저 판단한다. 실제 중국 고유명사는 자연스러운 한국 한자음으로, 외국·판타지 고유명사는 원래 발음을 복원한 한국어 외래어 표기로 옮긴다. 일본 고유명사는 일본식 독음을 사용한다. 외국 이름을 ‘극자사내이’, ‘단니이’, ‘위이손’처럼 한자별 한국 한자음으로 기계적으로 변환하지 않는다."
+ return "[고유명사 표기표]\n\n"+
+ list.map(x=>`${x.src} = ${x.ko}`).join("\n")+
+ "\n\n원문에서 위 고유명사가 등장하면 반드시 지정된 표기를 사용한다."+
+ "\n표에 없는 고유명사는 문맥상 실제 중국 고유명사인지, 중국어로 음차된 외국·판타지 고유명사인지 먼저 판단한다."+
+ "\n실제 중국 고유명사는 자연스러운 한국 한자음으로, 외국·판타지 고유명사는 원래 발음을 복원한 한국어 외래어 표기로 옮긴다."+
+ "\n일본 고유명사는 일본식 독음을 사용한다."+
+ "\n의미를 가진 별명이나 코드명은 문맥에 따라 자연스러운 한국어 뜻으로 옮긴다."+
+ "\n외국 이름을 ‘극자사내이’, ‘단니이’, ‘위이손’처럼 한자별 한국 한자음으로 기계적으로 변환하지 않는다."+
+ "\n실제 중국 이름을 ‘샤창샤오’, ‘리칭’처럼 중국어 병음으로 음역하지 않는다."
 }
 function refresh(filter="all"){
  $("#output").value=format(filter);
@@ -111,9 +119,21 @@ $("#extract").onclick=async()=>{
   const r=await fetch("/api/extract",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
   const d=await r.json().catch(()=>({}));
   if(!r.ok)throw new Error(d.error||"요청에 실패했습니다.");
-  entries=(d.entries||[]).filter(x=>["person","place"].includes(x.cat));
-  projectName=payload.project||d.pageTitle||"고유명사 표기표";
-  $("#resultTitle").textContent=projectName;refresh();
+entries=(d.entries||[]).filter(x=>["person","place"].includes(x.cat));
+
+let autoTitle=(d.pageTitle||"")
+  .replace(/\s*[-_|｜]\s*(52书库|晋江文学城|长佩文学|起点中文网).*$/i,"")
+  .replace(/^第\s*\d+\s*[章节回]\s*/,"")
+  .trim();
+
+projectName=payload.project||autoTitle||d.pageTitle||"고유명사 표기표";
+
+if(!$("#project").value.trim()){
+  $("#project").value=projectName;
+}
+
+$("#resultTitle").textContent=projectName;
+refresh();
   $("#resultCard").classList.remove("hidden");
   setStatus("3/3 용어집 정리가 완료되었습니다.","ok");showToast("용어집 추출이 완료됐어요");
   $("#resultCard").scrollIntoView({behavior:"smooth",block:"start"})
