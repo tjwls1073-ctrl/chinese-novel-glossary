@@ -2,132 +2,107 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#f7f4ef">
-  <title>용어집</title>
-  <link rel="stylesheet" href="/style.css">
-  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="중국 웹소설 원문에서 사람 이름만 찾아 자연스러운 한국어 표기로 저장하는 작품별 인명 용어집">
+  <title>소설 인명 용어집</title>
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-  <main class="app-shell">
+  <div class="page-shell">
     <header class="hero">
-      <div class="hero-icon" aria-hidden="true">▤</div>
-      <h1>소설 용어집 추출기</h1>
-      <p>소설 본문에서 고유명사를 추출하여 용어집을 자동으로 생성합니다.</p>
+      <div>
+        <p class="eyebrow">CHINESE NOVEL NAME GLOSSARY</p>
+        <h1>소설 인명 용어집</h1>
+        <p class="hero-copy">회차 URL이나 중국어 원문에서 <strong>사람 이름만</strong> 찾아, 작품별로 누적하고 자연스러운 한국어 표기로 정리합니다.</p>
+      </div>
+      <div class="hero-badge" aria-hidden="true">人名</div>
     </header>
 
-    <section class="surface input-surface">
-      <div class="tabs" role="tablist" aria-label="입력 방식">
-        <button class="tab active" data-mode="url" type="button">URL로 가져오기</button>
-        <button class="tab" data-mode="text" type="button">본문 붙여넣기</button>
-      </div>
-
-      <div id="urlPanel" class="panel active">
-        <label for="url">소설 회차 주소</label>
-        <input id="url" type="url" placeholder="https://example.com/chapter/1" autocomplete="url">
-        <p class="hint">사이트에서 자동 수집이 막히면 본문 붙여넣기를 사용하세요.</p>
-      </div>
-
-      <div id="textPanel" class="panel">
-        <label for="text">중국어 본문</label>
-        <textarea id="text" rows="10" placeholder="중국어 소설 본문을 붙여넣으세요."></textarea>
-      </div>
-
-      <div class="field">
-        <label for="project">작품명 <span class="label-note">(저장용)</span></label>
-        <input id="project" placeholder="예: 전하, 어찌 그리 찔리십니까">
-        <p class="hint">작품명을 입력하면 작품별로 용어집을 따로 저장할 수 있어요.</p>
-      </div>
-
-      <button id="extract" class="primary extract-button" type="button">
-        <span class="button-icon" aria-hidden="true">✦</span>
-        용어집 추출 시작
-      </button>
-
-      <div id="status" class="status" aria-live="polite"></div>
-    </section>
-
-    <details class="surface advanced">
-      <summary>
-        <span class="summary-icon" aria-hidden="true">⌘</span>
-        API 키 및 고급 설정
-      </summary>
-
-      <div class="advanced-inner">
-        <label for="apiKey">Gemini API Key</label>
-        <div class="secret-field">
-          <input id="apiKey" type="password" autocomplete="off" placeholder="AIza...">
-          <button id="toggleApiKey" class="secondary secret-toggle" type="button">보기</button>
+    <main>
+      <section class="card" aria-labelledby="project-heading">
+        <div class="section-heading">
+          <div><p class="step">STEP 1</p><h2 id="project-heading">작품 선택</h2></div>
+          <span id="projectMeta" class="meta-pill">인명 0개 · 회차 0개</span>
         </div>
-
-        <label class="check remember-key">
-          <input id="rememberApiKey" type="checkbox">
-          <span>이 기기에 API 키 저장</span>
-        </label>
-        <p class="hint">API 키는 브라우저에서만 저장되며 GitHub 파일에는 포함되지 않습니다.</p>
-
-        <div class="field model-field">
-          <label for="model">모델 선택</label>
-          <input id="model" value="gemini-3.1-flash-lite">
+        <div class="project-row">
+          <label class="field grow"><span>현재 작품</span><select id="projectSelect"></select></label>
+          <div class="button-cluster align-end">
+            <button id="renameProjectBtn" class="button ghost" type="button">이름 변경</button>
+            <button id="deleteProjectBtn" class="button danger-ghost" type="button">삭제</button>
+          </div>
         </div>
-
-        <label class="check">
-          <input id="mergeExisting" type="checkbox" checked>
-          <span>같은 작품의 기존 용어집과 합치기</span>
-        </label>
-      </div>
-    </details>
-
-    <section class="surface library-surface">
-      <div class="section-head">
-        <div>
-          <span class="section-kicker">저장됨</span>
-          <h2>저장된 용어집</h2>
+        <div class="new-project-row">
+          <label class="field grow"><span>새 작품명</span><input id="newProjectName" type="text" maxlength="80" placeholder="예: 从红月开始"></label>
+          <button id="addProjectBtn" class="button secondary align-end" type="button">새 작품 만들기</button>
         </div>
-        <button id="clear" class="text-button" type="button">전체 삭제</button>
-      </div>
+      </section>
 
-      <p class="library-help">추출 결과에서 <b>작품에 저장</b>을 누르면 작품별로 따로 보관됩니다.</p>
-      <div id="saved" class="saved"></div>
-    </section>
-
-    <section id="resultCard" class="surface result-surface hidden">
-      <div class="section-head">
-        <div>
-          <span class="section-kicker">추출 결과</span>
-          <h2 id="resultTitle">추출된 용어집</h2>
+      <section class="card" aria-labelledby="source-heading">
+        <div class="section-heading">
+          <div><p class="step">STEP 2</p><h2 id="source-heading">회차 불러오기</h2></div>
+          <button id="clearTextBtn" class="text-button" type="button">원문 비우기</button>
         </div>
-        <span id="count" class="count">0개</span>
-      </div>
+        <div class="url-row">
+          <label class="field grow"><span>회차 URL</span><input id="urlInput" type="url" inputmode="url" placeholder="https://..."></label>
+          <button id="fetchBtn" class="button secondary align-end" type="button">URL 불러오기</button>
+        </div>
+        <p class="field-help">사이트가 자동 불러오기를 막는 경우에는 아래 원문 칸에 직접 붙여넣어도 됩니다.</p>
+        <div id="pageInfo" class="page-info" hidden></div>
+        <label class="field source-field"><span>중국어 원문</span><textarea id="sourceText" rows="16" maxlength="180000" placeholder="회차 본문을 붙여넣거나 URL 불러오기를 사용하세요."></textarea></label>
+        <div class="textarea-meta"><span id="charCount">0자</span><span>한 회차씩 넣으면 결과를 확인하기 쉽습니다.</span></div>
+      </section>
 
-      <div class="filter-row">
-        <button class="filter active" data-filter="all" type="button">전체</button>
-        <button class="filter" data-filter="person" type="button">인물</button>
-        <button class="filter" data-filter="place" type="button">지명·세력</button>
-      </div>
+      <section class="card" aria-labelledby="extract-heading">
+        <div class="section-heading"><div><p class="step">STEP 3</p><h2 id="extract-heading">인명 추출 및 번역</h2></div></div>
+        <details class="settings-box">
+          <summary>Gemini 설정</summary>
+          <div class="settings-grid">
+            <label class="field"><span>Gemini API Key</span><input id="apiKey" type="password" autocomplete="off" placeholder="서버 Secret을 쓰면 비워도 됩니다"></label>
+            <label class="field"><span>모델</span><input id="model" type="text" value="gemini-3.1-flash-lite" spellcheck="false"></label>
+          </div>
+          <label class="check-row"><input id="saveApiKey" type="checkbox"><span>이 브라우저에 API Key 저장</span></label>
+          <p class="field-help">저장을 켜면 키가 이 브라우저의 localStorage에 보관됩니다. 공용 기기에서는 켜지 마세요.</p>
+        </details>
+        <button id="extractBtn" class="button primary wide" type="button">현재 작품에 인명 추가하기</button>
+        <div id="status" class="status" role="status" aria-live="polite" hidden></div>
+      </section>
 
-      <textarea id="output" rows="17" spellcheck="false"></textarea>
+      <section class="card" aria-labelledby="glossary-heading">
+        <div class="section-heading">
+          <div><p class="step">RESULT</p><h2 id="glossary-heading">현재 작품 용어집</h2></div>
+          <span id="entryCount" class="meta-pill">0개</span>
+        </div>
+        <div class="toolbar">
+          <label class="search-box"><span class="sr-only">용어집 검색</span><input id="entrySearch" type="search" placeholder="원문 또는 한글 이름 검색"></label>
+          <label class="sort-box"><span>정렬</span><select id="sortMode"><option value="added">추가 순서</option><option value="source">원문 순서</option><option value="korean">한글 순서</option></select></label>
+        </div>
+        <div id="emptyState" class="empty-state">아직 저장된 인명이 없습니다.<br>원문을 불러온 뒤 ‘현재 작품에 인명 추가하기’를 눌러 주세요.</div>
+        <div id="entryTableWrap" class="table-wrap" hidden>
+          <table class="entry-table"><thead><tr><th scope="col">원문 이름</th><th scope="col">한국어 표기</th><th scope="col" class="action-column">삭제</th></tr></thead><tbody id="entryList"></tbody></table>
+        </div>
+        <form id="manualEntryForm" class="manual-entry">
+          <label class="field"><span>원문 이름 직접 추가</span><input id="manualSource" type="text" maxlength="40" placeholder="夏长啸"></label>
+          <label class="field"><span>한국어 표기</span><input id="manualKorean" type="text" maxlength="60" placeholder="하장소"></label>
+          <button class="button ghost align-end" type="submit">직접 추가</button>
+        </form>
+        <div class="output-actions">
+          <button id="copyBtn" class="button primary" type="button">전체 복사</button>
+          <button id="downloadTxtBtn" class="button ghost" type="button">TXT 저장</button>
+          <button id="backupBtn" class="button ghost" type="button">전체 백업</button>
+          <button id="restoreBtn" class="button ghost" type="button">백업 불러오기</button>
+          <input id="restoreInput" type="file" accept="application/json,.json" hidden>
+        </div>
+        <label class="check-row compact"><input id="includeHeader" type="checkbox"><span>복사할 때 <code>[인명 표기표]</code> 제목 포함</span></label>
+      </section>
 
-      <div class="actions">
-        <button id="copy" class="primary" type="button">콜로모용 복사</button>
-        <button id="save" class="secondary" type="button">작품에 저장</button>
-        <button id="download" class="secondary" type="button">TXT 저장</button>
-      </div>
+      <section class="card" aria-labelledby="history-heading">
+        <div class="section-heading"><div><p class="step">HISTORY</p><h2 id="history-heading">처리한 회차</h2></div></div>
+        <div id="chapterHistory" class="chapter-history"></div>
+      </section>
+    </main>
 
-      <details class="prompt-details">
-        <summary>번역 지침과 함께 복사</summary>
-        <textarea id="promptBox" rows="11" readonly></textarea>
-        <button id="copyPrompt" class="secondary full" type="button">용어집 + 번역 지침 복사</button>
-      </details>
-    </section>
-
-    <footer class="footer-note">
-      <span aria-hidden="true">▤</span>
-      용어집은 이 브라우저에만 저장됩니다.
-    </footer>
-  </main>
-
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="/app.js"></script>
+    <footer>작품과 용어집은 이 브라우저에 저장됩니다. 브라우저 데이터를 지우기 전 ‘전체 백업’을 권장합니다.</footer>
+  </div>
+  <script src="./app.js" defer></script>
 </body>
 </html>
