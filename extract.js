@@ -1,7 +1,7 @@
 const MAX_HTML=2_000_000,MAX_TEXT=80_000;
 export async function onRequestPost({request,env}){
  try{
-  const b=await request.json(),model=cleanModel(b.model||env.GEMINI_MODEL||"gemini-3.1-flash-lite");
+  const b=await request.json(),model=cleanModel(b.model||env.GEMINI_MODEL||"gemini-2.5-flash");
   let text="",pageTitle="";
   if(b.mode==="text")text=String(b.text||"");
   else{const u=validUrl(b.url),p=await fetchPage(u);pageTitle=title(p);text=htmlText(p)}
@@ -29,39 +29,56 @@ async function fetchPage(u){const c=new AbortController(),t=setTimeout(()=>c.abo
 function title(h){const m=h.match(/<title[^>]*>([\s\S]*?)<\/title>/i);return ent((m?.[1]||"").replace(/<[^>]+>/g," ").trim()).slice(0,120)}
 function htmlText(h){return ent(h.replace(/<!--[\s\S]*?-->/g," ").replace(/<(script|style|noscript|svg|canvas|iframe|form|nav|footer|header|aside)[^>]*>[\s\S]*?<\/\1>/gi," ").replace(/<br\s*\/?>/gi,"\n").replace(/<\/(p|div|article|section|li|h[1-6])>/gi,"\n").replace(/<[^>]+>/g," ")).replace(/\s+/g," ")}
 function ent(s){const m={"&nbsp;":" ","&amp;":"&","&lt;":"<","&gt;":">","&quot;":'"',"&#39;":"'"};return s.replace(/&(nbsp|amp|lt|gt|quot|#39);/gi,x=>m[x.toLowerCase()]||x).replace(/&#(\d+);/g,(_,n)=>String.fromCodePoint(+n)).replace(/&#x([0-9a-f]+);/gi,(_,n)=>String.fromCodePoint(parseInt(n,16)))}
-function makePrompt(text,existing){return `중국어로 쓰인 웹소설 본문에서 번역용 고유명사를 추출해 JSON으로 출력하라.
+function makePrompt(text,existing){return `중국어 웹소설 본문에서 번역에 필요한 고유명사만 추출하여 JSON으로 출력하라.
 
-반드시 다음 JSON 형식만 출력:
-{"entries":[{"src":"原文漢字","ko":"자연스러운 한국어 표기","cat":"person"}]}
+반드시 아래 JSON만 출력한다.
+{"entries":[{"src":"原文漢字","ko":"한국어 표기","cat":"person"}]}
 
-cat 값:
-- person: 인명, 성명, 자, 호, 별칭
-- place: 지명, 국가, 도시, 산천, 가문, 문파, 종문, 조직, 세력
-- term: 관직, 직책, 공법, 무공, 술법, 무기, 법보, 영물, 괴담, 던전, 시스템 고유명
+cat 값
+- person : 인명, 자, 호, 별칭
+- place : 국가, 도시, 지역, 문파, 종문, 가문, 조직, 세력
+- term : 무공, 공법, 술법, 무기, 법보, 시스템, 아이템, 직책 등 고유명
 
-판단 순서:
-1. 작품 전체의 배경과 해당 이름 주변 문맥을 보고 각 고유명사가 실제 중국식인지, 중국어로 음차된 외국·서양·판타지식인지, 일본식인지 먼저 판단한다.
-2. 한자 모양만 보고 모든 이름을 한국 한자음으로 처리하지 않는다.
+규칙
 
-표기 규칙:
-1. src는 원문의 중국 한자를 그대로 보존한다.
-2. 실제 중국 인명·지명·문파·조직은 자연스러운 한국 한자음으로 표기한다.
-3. 중국어로 음차된 서양·외국·판타지 인명과 지명은 원래 발음을 최대한 복원하여 한국어 외래어 표기로 적는다.
-4. 외국 이름을 한자별 한국 한자음으로 기계적으로 읽지 않는다.
-   - 丹尼尔 → 다니엘 (단니이 금지)
-   - 威尔逊 → 윌슨 (위이손 금지)
-   - 亨利 → 헨리 (형리 금지)
-   - 克里斯 → 크리스 (극리사 금지)
-   - 亚历山大 → 알렉산더 (아력산대 금지)
-   - 克孜斯奈尔처럼 판타지식 음차명은 문맥과 중국어 발음을 참고하여 크즈스나엘처럼 읽기 자연스럽게 복원한다.
-5. 일본 인명·지명으로 판단되면 일본식 독음을 사용한다.
-6. 뜻이 명확한 직책·기술·아이템은 무조건 음독하지 말고 한국어 독자가 이해하기 자연스럽게 처리하되, 고유명 성격은 유지한다.
-7. 일반 명사, 대명사, 단순 호칭, 광고·메뉴는 제외한다.
-8. 확신이 낮은 항목은 제외하고 중복을 제거한다.
-9. 기존 용어집은 일관성 참고 자료로 사용한다. 다만 기존 표기가 외국 음차명을 ‘단니이·위이손·극리사’처럼 한자음으로 기계 변환한 오류라면 문맥에 맞는 자연스러운 외래어 표기로 바로잡는다.
+1. src는 원문의 중국 한자를 그대로 유지한다.
 
-기존 용어집:
+2. 이미 용어집에 있는 항목은 그대로 유지한다.
+
+3. 실제 중국식 인명·지명·조직은 자연스러운 한국 한자음으로 표기한다.
+예)
+张三 → 장삼
+李青 → 이청
+夏常笑 → 하상소
+
+중국어 발음을 그대로 한글로 옮기지 않는다.
+예)
+夏常笑 → 샤창샤오 (금지)
+李青 → 리칭 (금지)
+
+4. 중국어로 음차한 외국·서양·판타지 이름은 한국 한자음으로 읽지 말고 원래 발음을 최대한 복원한다.
+예)
+丹尼尔 → 다니엘
+威尔逊 → 윌슨
+克里斯 → 크리스
+亚历山大 → 알렉산더
+
+다음과 같은 기계적 한자음 표기는 금지한다.
+단니이
+위이손
+극리사
+아력산대
+
+5. 일본 인명이나 일본 지명은 일본식 독음을 사용한다.
+
+6. 일반 명사, 대명사, 숫자, 단순 호칭은 제외한다.
+
+7. 확실한 고유명사만 추출한다.
+
+8. 같은 항목은 한 번만 출력한다.
+
+기존 용어집
 ${JSON.stringify(existing)}
 
-본문:
-${text}`}
+본문
+${text}`;}
